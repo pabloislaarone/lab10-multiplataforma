@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../services/mi_lista_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/logo_prime.dart';
-import 'main_shell.dart';
+import 'perfiles_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,15 +24,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _iniciar() async {
-    await Future.wait([
-      MiListaService.instancia.cargar(),
-      Future.delayed(const Duration(milliseconds: 1800)),
-    ]);
+    await Future.delayed(const Duration(milliseconds: 1800));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, __, ___) => const MainShell(),
+        pageBuilder: (_, __, ___) => const PerfilesScreen(),
         transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
       ),
     );

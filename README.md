@@ -10,11 +10,11 @@ assets/
 lib/
   main.dart
   data/       catalogo.dart (títulos reales: pósters locales + en la nube)
-  models/     contenido.dart
-  services/   mi_lista_service.dart, imagen_service.dart
+  models/     contenido.dart, perfil.dart
+  services/   estado_usuario.dart, mi_lista_service.dart, imagen_service.dart
   theme/      app_theme.dart
-  widgets/    carrusel, tarjetas, imagen local/nube, botón Mi lista, ruleta "¿Qué veo hoy?"
-  screens/    splash, inicio, buscar, mi lista, mi espacio, detalle, reproductor
+  widgets/    carrusel, tarjetas, vista previa, avatar, imagen local/nube, Mi lista, ruleta
+  screens/    splash, perfiles, inicio, buscar, mi lista, mi espacio, detalle, reproductor
 tools/
   descargar_posters.ps1
 test/

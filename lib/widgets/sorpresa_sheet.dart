@@ -38,8 +38,8 @@ class _SorpresaSheetState extends State<SorpresaSheet> {
   Timer? _timer;
 
   List<Contenido> get _candidatos => _genero == null
-      ? catalogo
-      : catalogo.where((c) => c.generos.contains(_genero)).toList();
+      ? contenidosVisibles
+      : contenidosVisibles.where((c) => c.generos.contains(_genero)).toList();
 
   @override
   void initState() {

@@ -4,14 +4,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/catalogo.dart';
 import '../models/contenido.dart';
 
-/// MEJORA: "Mi lista" se guarda en el dispositivo (shared_preferences),
-/// así los títulos agregados siguen ahí al cerrar y abrir la app.
+/// "Mi lista" de cada perfil, guardada en el dispositivo (shared_preferences).
 class MiListaService extends ChangeNotifier {
   MiListaService._();
   static final MiListaService instancia = MiListaService._();
 
-  static const _clave = 'mi_lista_ids';
+  String _perfilId = 'pablo';
   final List<String> _ids = [];
+
+  String get _clave => '${_perfilId}_mi_lista_ids';
 
   List<Contenido> get contenidos => _ids
       .map((id) => catalogo.where((c) => c.id == id))
@@ -21,7 +22,8 @@ class MiListaService extends ChangeNotifier {
 
   bool contiene(String id) => _ids.contains(id);
 
-  Future<void> cargar() async {
+  Future<void> cargar(String perfilId) async {
+    _perfilId = perfilId;
     final prefs = await SharedPreferences.getInstance();
     _ids
       ..clear()

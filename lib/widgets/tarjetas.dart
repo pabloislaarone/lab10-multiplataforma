@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/contenido.dart';
 import '../screens/detalle_screen.dart';
+import '../screens/reproductor_screen.dart';
+import '../services/estado_usuario.dart';
 import '../theme/app_theme.dart';
 import 'imagen_contenido.dart';
+import 'vista_previa_sheet.dart';
 
 void abrirDetalle(BuildContext context, Contenido c, {String heroPrefijo = ''}) {
   Navigator.of(context).push(
@@ -62,6 +66,7 @@ class PosterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => abrirDetalle(context, contenido, heroPrefijo: heroPrefijo),
+      onLongPress: () => mostrarVistaPrevia(context, contenido),
       child: SizedBox(
         width: ancho,
         child: AspectRatio(
@@ -140,8 +145,43 @@ class TarjetaContinuar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estado = EstadoUsuario.instancia;
+    final progreso = estado.progresoDe(contenido.id);
+    final detalle = contenido.tipo == TipoContenido.serie
+        ? 'T1:E${estado.episodioDe(contenido.id)}'
+        : contenido.tipoTexto;
     return GestureDetector(
-      onTap: () => abrirDetalle(context, contenido, heroPrefijo: 'continuar'),
+      onTap: () => abrirReproductor(context, contenido),
+      onLongPress: () {
+        HapticFeedback.mediumImpact();
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: AppColors.superficie,
+          builder: (sheetCtx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('Ver detalles'),
+                  onTap: () {
+                    Navigator.pop(sheetCtx);
+                    abrirDetalle(context, contenido, heroPrefijo: 'continuar');
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.close),
+                  title: const Text('Quitar de Continuar viendo'),
+                  onTap: () {
+                    Navigator.pop(sheetCtx);
+                    estado.quitarDeContinuar(contenido.id);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
       child: SizedBox(
         width: 220,
         child: Column(
@@ -169,7 +209,7 @@ class TarjetaContinuar extends StatelessWidget {
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: LinearProgressIndicator(
-                        value: contenido.progreso,
+                        value: progreso,
                         minHeight: 4,
                         backgroundColor: Colors.white24,
                         color: AppColors.azulPrime,
@@ -191,7 +231,7 @@ class TarjetaContinuar extends StatelessWidget {
               ),
             ),
             Text(
-              'Quedan ${((1 - contenido.progreso) * 100).round()}% · ${contenido.tipoTexto}',
+              '$detalle · Queda ${((1 - progreso) * 100).round()}%',
               style: AppTheme.metadato,
             ),
           ],

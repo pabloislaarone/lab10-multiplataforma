@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/contenido.dart';
+import '../screens/reproductor_screen.dart';
+import '../services/estado_usuario.dart';
 import '../theme/app_theme.dart';
 import 'boton_mi_lista.dart';
 import 'imagen_contenido.dart';
@@ -152,7 +154,7 @@ class _Banner extends StatelessWidget {
                   children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () => abrirDetalle(context, contenido, heroPrefijo: 'banner'),
+                        onPressed: () => abrirReproductor(context, contenido),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
@@ -161,7 +163,9 @@ class _Banner extends StatelessWidget {
                         ),
                         icon: const Icon(Icons.play_arrow),
                         label: Text(
-                          contenido.progreso > 0 ? 'Continuar' : 'Reproducir',
+                          EstadoUsuario.instancia.progresoDe(contenido.id) > 0
+                              ? 'Continuar'
+                              : 'Reproducir',
                           style: const TextStyle(
                             fontFamily: AppFonts.encabezado,
                             fontWeight: FontWeight.w700,

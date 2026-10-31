@@ -1,4 +1,5 @@
 import '../models/contenido.dart';
+import '../services/estado_usuario.dart';
 
 /// Catálogo con títulos reales de Prime Video (fines educativos).
 ///
@@ -314,25 +315,48 @@ const List<Contenido> catalogo = [
   ),
 ];
 
-Contenido _porId(String id) => catalogo.firstWhere((c) => c.id == id);
+/// Videos de muestra públicos (películas libres de Blender / Google) para
+/// que el reproductor reproduzca video real.
+const videoContenido =
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+const videoTrailer =
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+
+/// Clasificaciones aptas para el perfil Niños.
+const _aptasNinos = {'TP', '7+', '13+'};
+
+/// Catálogo que puede ver el perfil actual (Niños solo ve contenido apto).
+List<Contenido> get contenidosVisibles => EstadoUsuario.instancia.esNinos
+    ? catalogo.where((c) => _aptasNinos.contains(c.clasificacion)).toList()
+    : catalogo;
 
 /// Carrusel principal: mezcla de pósters locales y en la nube.
-List<Contenido> get destacados =>
-    ['the_boys', 'gen_v', 'fallout', 'rings_of_power', 'road_house'].map(_porId).toList();
+List<Contenido> get destacados {
+  const ids = ['the_boys', 'gen_v', 'fallout', 'rings_of_power', 'road_house'];
+  final visibles = contenidosVisibles;
+  final lista = visibles.where((c) => ids.contains(c.id)).toList();
+  return lista.isNotEmpty ? lista : visibles.take(4).toList();
+}
 
-List<Contenido> get continuarViendo => catalogo.where((c) => c.progreso > 0).toList();
-List<Contenido> get originales => catalogo.where((c) => c.original).toList();
+List<Contenido> get originales => contenidosVisibles.where((c) => c.original).toList();
 List<Contenido> get peliculas =>
-    catalogo.where((c) => c.tipo == TipoContenido.pelicula).toList();
-List<Contenido> get series => catalogo.where((c) => c.tipo == TipoContenido.serie).toList();
+    contenidosVisibles.where((c) => c.tipo == TipoContenido.pelicula).toList();
+List<Contenido> get series =>
+    contenidosVisibles.where((c) => c.tipo == TipoContenido.serie).toList();
 List<Contenido> get top10 {
-  final lista = [...catalogo]..sort((a, b) => b.calificacion.compareTo(a.calificacion));
+  final lista = [...contenidosVisibles]
+    ..sort((a, b) => b.calificacion.compareTo(a.calificacion));
   return lista.take(10).toList();
 }
 
+/// Títulos parecidos (comparten al menos un género).
+List<Contenido> similaresA(Contenido c) => contenidosVisibles
+    .where((x) => x.id != c.id && x.generos.any(c.generos.contains))
+    .toList();
+
 List<String> get todosLosGeneros {
   final set = <String>{};
-  for (final c in catalogo) {
+  for (final c in contenidosVisibles) {
     set.addAll(c.generos);
   }
   final lista = set.toList()..sort();

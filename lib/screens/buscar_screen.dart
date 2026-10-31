@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/catalogo.dart';
 import '../models/contenido.dart';
+import '../services/estado_usuario.dart';
 import '../theme/app_theme.dart';
 import '../widgets/tarjetas.dart';
 
@@ -31,7 +32,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
 
   List<Contenido> get _resultados {
     final q = _quitarTildes(_texto.text.trim().toLowerCase());
-    return catalogo.where((c) {
+    return contenidosVisibles.where((c) {
       final coincideTexto = q.isEmpty ||
           _quitarTildes(c.titulo.toLowerCase()).contains(q) ||
           c.generos.any((g) => _quitarTildes(g.toLowerCase()).contains(q));
@@ -82,6 +83,8 @@ class _BuscarScreenState extends State<BuscarScreen> {
             child: TextField(
               controller: _texto,
               onChanged: (_) => setState(() {}),
+              textInputAction: TextInputAction.search,
+              onSubmitted: EstadoUsuario.instancia.registrarBusqueda,
               style: const TextStyle(fontFamily: AppFonts.cuerpo),
               decoration: InputDecoration(
                 hintText: 'Películas, series, géneros…',
@@ -142,7 +145,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
           const SizedBox(height: 6),
           Expanded(
             child: !_hayFiltros
-                ? _explorarGeneros()
+                ? _inicioBusqueda()
                 : resultados.isEmpty
                     ? const Center(
                         child: Text('Sin resultados 😕', style: AppTheme.tituloSeccion),
@@ -157,7 +160,11 @@ class _BuscarScreenState extends State<BuscarScreen> {
                         ),
                         itemCount: resultados.length,
                         itemBuilder: (_, i) =>
-                            PosterCard(contenido: resultados[i], heroPrefijo: 'buscar'),
+                            GestureDetector(
+                          onTapDown: (_) =>
+                              EstadoUsuario.instancia.registrarBusqueda(_texto.text),
+                          child: PosterCard(contenido: resultados[i], heroPrefijo: 'buscar'),
+                        ),
                       ),
           ),
         ],
@@ -174,6 +181,59 @@ class _BuscarScreenState extends State<BuscarScreen> {
           onSelected: (v) => setState(() => _tipo = v ? tipo : null),
         ),
       );
+
+  Widget _inicioBusqueda() {
+    return ListenableBuilder(
+      listenable: EstadoUsuario.instancia,
+      builder: (_, __) {
+        final recientes = EstadoUsuario.instancia.busquedasRecientes;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (recientes.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text('Búsquedas recientes', style: AppTheme.tituloSeccion),
+                    ),
+                    TextButton(
+                      onPressed: EstadoUsuario.instancia.borrarBusquedas,
+                      child: const Text('Borrar'),
+                    ),
+                  ],
+                ),
+              ),
+            if (recientes.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: recientes
+                      .map((b) => ActionChip(
+                            avatar: const Icon(Icons.history, size: 16),
+                            label: Text(b),
+                            onPressed: () => setState(() {
+                              _texto.text = b;
+                              _texto.selection =
+                                  TextSelection.collapsed(offset: b.length);
+                            }),
+                          ))
+                      .toList(),
+                ),
+              ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Text('Explorar por género', style: AppTheme.tituloSeccion),
+            ),
+            Expanded(child: _explorarGeneros()),
+          ],
+        );
+      },
+    );
+  }
 
   Widget _explorarGeneros() {
     const colores = [
