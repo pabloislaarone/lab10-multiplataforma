@@ -1,6 +1,12 @@
 enum TipoContenido { pelicula, serie }
 
-/// Un título del catálogo. La imagen puede ser local (assets) o de la nube (URL).
+/// Un título real del catálogo de Prime Video (uso educativo).
+///
+/// Imágenes:
+///  - [imagenLocal]: póster guardado en assets/images/posters (imagen LOCAL).
+///  - [wiki]: título del artículo en Wikipedia (en inglés); de ahí se obtiene
+///    el póster por internet (imagen en la NUBE). También sirve de respaldo
+///    si falta el archivo local.
 class Contenido {
   final String id;
   final String titulo;
@@ -8,14 +14,14 @@ class Contenido {
   final TipoContenido tipo;
   final List<String> generos;
   final int anio;
-  final String clasificacion; // 13+, 16+, 18+...
-  final double calificacion; // IMDb-like 0..10
-  final String duracion; // "2 h 5 min" o "3 temporadas"
-  final String imagen; // ruta asset o URL
-  final String? banner; // imagen horizontal opcional
+  final String clasificacion;
+  final double calificacion; // IMDb aproximado
+  final String duracion;
+  final String wiki;
+  final String? imagenLocal;
   final bool incluidoConPrime;
   final bool original;
-  final double progreso; // 0..1 para "Continuar viendo"
+  final double progreso; // 0..1 para "Continuar viendo" (simulado)
 
   const Contenido({
     required this.id,
@@ -27,14 +33,16 @@ class Contenido {
     required this.clasificacion,
     required this.calificacion,
     required this.duracion,
-    required this.imagen,
-    this.banner,
+    required this.wiki,
+    this.imagenLocal,
     this.incluidoConPrime = true,
     this.original = false,
     this.progreso = 0,
   });
 
-  bool get esImagenLocal => !imagen.startsWith('http');
-  String get imagenHorizontal => banner ?? imagen;
+  /// Ruta que entiende ImagenContenido: asset local o "wiki:Titulo".
+  String get imagen => imagenLocal ?? 'wiki:$wiki';
+  String get imagenHorizontal => imagen;
+  bool get esImagenLocal => imagenLocal != null;
   String get tipoTexto => tipo == TipoContenido.pelicula ? 'Película' : 'Serie';
 }

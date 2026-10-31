@@ -52,7 +52,7 @@ class DetalleScreen extends StatelessWidget {
                 children: [
                   Hero(
                     tag: '$heroPrefijo-${c.id}',
-                    child: ImagenContenido(ruta: c.imagenHorizontal, textoRespaldo: c.titulo),
+                    child: ImagenContenido(ruta: c.imagenHorizontal, wiki: c.wiki, alignment: Alignment.topCenter, textoRespaldo: c.titulo),
                   ),
                   const DecoratedBox(
                     decoration: BoxDecoration(
@@ -289,6 +289,7 @@ class _Episodio extends StatelessWidget {
                 children: [
                   ImagenContenido(
                     ruta: contenido.imagenHorizontal,
+                    wiki: contenido.wiki,
                     width: 130,
                     height: 73,
                     textoRespaldo: 'E$numero',

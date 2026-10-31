@@ -98,6 +98,8 @@ class _Banner extends StatelessWidget {
             tag: 'banner-${contenido.id}',
             child: ImagenContenido(
               ruta: contenido.imagenHorizontal,
+              wiki: contenido.wiki,
+              alignment: Alignment.topCenter,
               textoRespaldo: contenido.titulo,
             ),
           ),

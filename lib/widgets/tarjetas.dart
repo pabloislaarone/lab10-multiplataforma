@@ -75,6 +75,7 @@ class PosterCard extends StatelessWidget {
                   tag: '$heroPrefijo-${contenido.id}',
                   child: ImagenContenido(
                     ruta: contenido.imagen,
+                    wiki: contenido.wiki,
                     textoRespaldo: contenido.titulo,
                   ),
                 ),
@@ -157,6 +158,7 @@ class TarjetaContinuar extends StatelessWidget {
                       tag: 'continuar-${contenido.id}',
                       child: ImagenContenido(
                         ruta: contenido.imagenHorizontal,
+                        wiki: contenido.wiki,
                         textoRespaldo: contenido.titulo,
                       ),
                     ),

@@ -118,6 +118,7 @@ class _SorpresaSheetState extends State<SorpresaSheet> {
                       borderRadius: BorderRadius.circular(8),
                       child: ImagenContenido(
                         ruta: c.imagen,
+                        wiki: c.wiki,
                         width: 110,
                         height: 165,
                         textoRespaldo: c.titulo,

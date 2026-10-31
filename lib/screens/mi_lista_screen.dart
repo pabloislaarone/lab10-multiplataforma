@@ -72,6 +72,7 @@ class MiListaScreen extends StatelessWidget {
                           tag: 'milista-${c.id}',
                           child: ImagenContenido(
                             ruta: c.imagenHorizontal,
+                            wiki: c.wiki,
                             width: 150,
                             height: 84,
                             textoRespaldo: c.titulo,

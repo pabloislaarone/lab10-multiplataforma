@@ -57,8 +57,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final continuar = _filtrar(continuarViendo);
     final origs = _filtrar(originales);
     final top = _filtrar(top10);
-    final incluidos = _filtrar(catalogo.where((c) => c.incluidoConPrime).toList());
-    final alquiler = _filtrar(catalogo.where((c) => !c.incluidoConPrime).toList());
+    final listaSeries = _filtrar(series);
+    final listaPeliculas = _filtrar(peliculas);
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
@@ -112,25 +112,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (_, i) => TarjetaTop(contenido: top[i], posicion: i + 1),
                   ),
                 ),
-              if (incluidos.isNotEmpty)
+              if (listaSeries.isNotEmpty)
                 SliverToBoxAdapter(
                   child: SeccionHorizontal(
-                    titulo: 'Incluido con Prime',
+                    titulo: 'Series incluidas con Prime',
                     alto: 180,
-                    cantidad: incluidos.length,
+                    cantidad: listaSeries.length,
                     itemBuilder: (_, i) =>
-                        PosterCard(contenido: incluidos[i], heroPrefijo: 'incl'),
+                        PosterCard(contenido: listaSeries[i], heroPrefijo: 'series'),
                   ),
                 ),
-              if (alquiler.isNotEmpty)
+              if (listaPeliculas.isNotEmpty)
                 SliverToBoxAdapter(
                   child: SeccionHorizontal(
-                    titulo: 'Alquiler o compra',
-                    subtitulo: 'Estrenos recientes',
+                    titulo: 'Películas incluidas con Prime',
                     alto: 180,
-                    cantidad: alquiler.length,
+                    cantidad: listaPeliculas.length,
                     itemBuilder: (_, i) =>
-                        PosterCard(contenido: alquiler[i], heroPrefijo: 'alq'),
+                        PosterCard(contenido: listaPeliculas[i], heroPrefijo: 'pelis'),
                   ),
                 ),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),

@@ -62,7 +62,7 @@ class _ReproductorScreenState extends State<ReproductorScreen> {
             Center(
               child: AspectRatio(
                 aspectRatio: 16 / 9,
-                child: ImagenContenido(ruta: c.imagenHorizontal, textoRespaldo: c.titulo),
+                child: ImagenContenido(ruta: c.imagenHorizontal, wiki: c.wiki, alignment: Alignment.topCenter, textoRespaldo: c.titulo),
               ),
             ),
             AnimatedOpacity(
