@@ -96,10 +96,10 @@ class MiEspacioScreen extends StatelessWidget {
               if (vistos.isNotEmpty)
                 SeccionHorizontal(
                   titulo: 'Vistos recientemente',
-                  alto: 150,
+                  alto: 74,
                   cantidad: vistos.length,
                   itemBuilder: (_, i) =>
-                      PosterCard(contenido: vistos[i], ancho: 100, heroPrefijo: 'visto'),
+                      PosterCard(contenido: vistos[i], ancho: 130, heroPrefijo: 'visto'),
                 ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -116,7 +116,7 @@ class MiEspacioScreen extends StatelessWidget {
               ...enCurso.map((e) => _FilaDescarga(
                     titulo: e.key.titulo,
                     ruta: e.key.imagen,
-                    wiki: e.key.wiki,
+                    respaldo: e.key.imagenNube,
                     progreso: e.value,
                     onEliminar: () => estado.eliminarDescarga(e.key.id),
                     onTap: () {},
@@ -124,7 +124,7 @@ class MiEspacioScreen extends StatelessWidget {
               ...descargados.map((c) => _FilaDescarga(
                     titulo: c.titulo,
                     ruta: c.imagen,
-                    wiki: c.wiki,
+                    respaldo: c.imagenNube,
                     progreso: 1,
                     onEliminar: () => estado.eliminarDescarga(c.id),
                     onTap: () => abrirReproductor(context, c),
@@ -145,7 +145,7 @@ class MiEspacioScreen extends StatelessWidget {
 class _FilaDescarga extends StatelessWidget {
   final String titulo;
   final String ruta;
-  final String wiki;
+  final String respaldo;
   final double progreso;
   final VoidCallback onEliminar;
   final VoidCallback onTap;
@@ -153,7 +153,7 @@ class _FilaDescarga extends StatelessWidget {
   const _FilaDescarga({
     required this.titulo,
     required this.ruta,
-    required this.wiki,
+    required this.respaldo,
     required this.progreso,
     required this.onEliminar,
     required this.onTap,
@@ -176,7 +176,7 @@ class _FilaDescarga extends StatelessWidget {
         onTap: completa ? onTap : null,
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: ImagenContenido(ruta: ruta, wiki: wiki, width: 44, height: 66, textoRespaldo: ''),
+          child: ImagenContenido(ruta: ruta, respaldo: respaldo, width: 96, height: 54, textoRespaldo: ''),
         ),
         title: Text(titulo, style: const TextStyle(fontFamily: AppFonts.encabezado, fontSize: 14)),
         subtitle: completa

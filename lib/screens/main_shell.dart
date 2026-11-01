@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 import 'buscar_screen.dart';
@@ -27,7 +28,30 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _indice, children: _pantallas),
+      // Cada pestaña conserva su estado (scroll, búsqueda) y el cambio es
+      // un fundido con leve zoom, en vez de un salto brusco.
+      body: Stack(
+        children: List.generate(_pantallas.length, (i) {
+          final activa = i == _indice;
+          return IgnorePointer(
+            ignoring: !activa,
+            child: TickerMode(
+              enabled: activa,
+              child: AnimatedOpacity(
+                opacity: activa ? 1 : 0,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                child: AnimatedScale(
+                  scale: activa ? 1 : 0.98,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOut,
+                  child: _pantallas[i],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           backgroundColor: AppColors.superficie,
@@ -45,7 +69,11 @@ class _MainShellState extends State<MainShell> {
         ),
         child: NavigationBar(
           selectedIndex: _indice,
-          onDestinationSelected: (i) => setState(() => _indice = i),
+          animationDuration: const Duration(milliseconds: 350),
+          onDestinationSelected: (i) {
+            if (i != _indice) HapticFeedback.selectionClick();
+            setState(() => _indice = i);
+          },
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),

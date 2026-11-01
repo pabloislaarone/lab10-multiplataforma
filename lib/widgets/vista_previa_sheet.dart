@@ -46,9 +46,9 @@ class _VistaPrevia extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: ImagenContenido(
                     ruta: c.imagen,
-                    wiki: c.wiki,
-                    width: 96,
-                    height: 144,
+                    respaldo: c.imagenNube,
+                    width: 128,
+                    height: 72,
                     textoRespaldo: c.titulo,
                   ),
                 ),

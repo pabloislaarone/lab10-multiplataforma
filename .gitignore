@@ -12,3 +12,7 @@ pubspec.lock
 .idea/
 *.iml
 .vscode/
+
+# Portadas descargadas localmente (no se suben al repo)
+assets/images/posters/*.png
+assets/images/posters/*.jpg

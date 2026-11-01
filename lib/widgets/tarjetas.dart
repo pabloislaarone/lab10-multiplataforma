@@ -7,17 +7,37 @@ import '../screens/reproductor_screen.dart';
 import '../services/estado_usuario.dart';
 import '../theme/app_theme.dart';
 import 'imagen_contenido.dart';
+import 'presionable.dart';
 import 'vista_previa_sheet.dart';
 
+/// Abre el detalle con una transición suave (fundido + leve subida),
+/// mientras la portada viaja con Hero.
 void abrirDetalle(BuildContext context, Contenido c, {String heroPrefijo = ''}) {
   Navigator.of(context).push(
     PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 350),
+      transitionDuration: const Duration(milliseconds: 420),
+      reverseTransitionDuration: const Duration(milliseconds: 320),
       pageBuilder: (_, __, ___) => DetalleScreen(contenido: c, heroPrefijo: heroPrefijo),
-      transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+      transitionsBuilder: (_, anim, __, child) {
+        final curva = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curva,
+          child: SlideTransition(
+            position: Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(curva),
+            child: child,
+          ),
+        );
+      },
     ),
   );
 }
+
+/// Hero de la portada: la imagen "vuela" de la tarjeta al detalle.
+Widget heroPortada({required String tag, required Widget child}) => Hero(
+      tag: tag,
+      transitionOnUserGestures: true,
+      child: child,
+    );
 
 /// Insignia azul "Incluido con Prime" o "Alquilar".
 class InsigniaPrime extends StatelessWidget {
@@ -49,7 +69,8 @@ class InsigniaPrime extends StatelessWidget {
   }
 }
 
-/// Póster vertical (2:3).
+/// Tarjeta horizontal 16:9, como las filas de la app móvil de Prime Video.
+/// Toque: abre el detalle. Mantener presionado: vista previa.
 class PosterCard extends StatelessWidget {
   final Contenido contenido;
   final double ancho;
@@ -58,52 +79,45 @@ class PosterCard extends StatelessWidget {
   const PosterCard({
     super.key,
     required this.contenido,
-    this.ancho = 120,
+    this.ancho = 200,
     this.heroPrefijo = 'poster',
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Presionable(
       onTap: () => abrirDetalle(context, contenido, heroPrefijo: heroPrefijo),
       onLongPress: () => mostrarVistaPrevia(context, contenido),
       child: SizedBox(
         width: ancho,
         child: AspectRatio(
-          aspectRatio: 2 / 3,
+          aspectRatio: 16 / 9,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Hero(
+                heroPortada(
                   tag: '$heroPrefijo-${contenido.id}',
                   child: ImagenContenido(
                     ruta: contenido.imagen,
-                    wiki: contenido.wiki,
+                    respaldo: contenido.imagenNube,
                     textoRespaldo: contenido.titulo,
                   ),
                 ),
-                if (contenido.original)
-                  const Positioned(top: 6, left: 6, child: _EtiquetaOriginal()),
-                Positioned(
-                  bottom: 6,
-                  right: 6,
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(170),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      contenido.incluidoConPrime ? Icons.check : Icons.attach_money,
-                      size: 12,
-                      color: contenido.incluidoConPrime
-                          ? AppColors.azulPrime
-                          : AppColors.dorado,
+                if (!contenido.incluidoConPrime)
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.attach_money, size: 12, color: AppColors.dorado),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -113,32 +127,7 @@ class PosterCard extends StatelessWidget {
   }
 }
 
-class _EtiquetaOriginal extends StatelessWidget {
-  const _EtiquetaOriginal();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColors.azulPrime,
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: const Text(
-        'ORIGINAL',
-        style: TextStyle(
-          fontFamily: AppFonts.encabezado,
-          fontWeight: FontWeight.w800,
-          fontSize: 8,
-          letterSpacing: 1,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
-
-/// Tarjeta horizontal (16:9) con barra de progreso para "Continuar viendo".
+/// Tarjeta de "Continuar viendo": reproduce directo y muestra la barra de progreso.
 class TarjetaContinuar extends StatelessWidget {
   final Contenido contenido;
   const TarjetaContinuar({super.key, required this.contenido});
@@ -150,7 +139,7 @@ class TarjetaContinuar extends StatelessWidget {
     final detalle = contenido.tipo == TipoContenido.serie
         ? 'T1:E${estado.episodioDe(contenido.id)}'
         : contenido.tipoTexto;
-    return GestureDetector(
+    return Presionable(
       onTap: () => abrirReproductor(context, contenido),
       onLongPress: () {
         HapticFeedback.mediumImpact();
@@ -194,25 +183,40 @@ class TarjetaContinuar extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Hero(
+                    heroPortada(
                       tag: 'continuar-${contenido.id}',
                       child: ImagenContenido(
-                        ruta: contenido.imagenHorizontal,
-                        wiki: contenido.wiki,
+                        ruta: contenido.imagen,
+                        respaldo: contenido.imagenNube,
                         textoRespaldo: contenido.titulo,
                       ),
                     ),
-                    Container(color: Colors.black.withAlpha(60)),
-                    const Center(
-                      child: Icon(Icons.play_circle_fill, size: 44, color: Colors.white),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black54],
+                        ),
+                      ),
+                    ),
+                    const Positioned(
+                      left: 8,
+                      bottom: 10,
+                      child: Icon(Icons.play_circle_fill, size: 32, color: Colors.white),
                     ),
                     Align(
                       alignment: Alignment.bottomCenter,
-                      child: LinearProgressIndicator(
-                        value: progreso,
-                        minHeight: 4,
-                        backgroundColor: Colors.white24,
-                        color: AppColors.azulPrime,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progreso),
+                        duration: const Duration(milliseconds: 700),
+                        curve: Curves.easeOutCubic,
+                        builder: (_, v, __) => LinearProgressIndicator(
+                          value: v,
+                          minHeight: 4,
+                          backgroundColor: Colors.white24,
+                          color: AppColors.azulPrime,
+                        ),
                       ),
                     ),
                   ],
@@ -241,7 +245,7 @@ class TarjetaContinuar extends StatelessWidget {
   }
 }
 
-/// Tarjeta del Top 10 con número gigante en BebasNeue.
+/// Tarjeta del Top 10 con número gigante en BebasNeue y portada 16:9.
 class TarjetaTop extends StatelessWidget {
   final Contenido contenido;
   final int posicion;
@@ -250,34 +254,30 @@ class TarjetaTop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 170,
-      child: Stack(
+      width: 240,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Positioned(
-            left: 0,
-            bottom: -18,
+          SizedBox(
+            width: 62,
             child: Text(
               '$posicion',
-              style: TextStyle(
+              textAlign: TextAlign.center,
+              style: const TextStyle(
                 fontFamily: AppFonts.titulo,
-                fontSize: 130,
-                height: 1,
+                fontSize: 110,
+                height: 0.82,
                 color: AppColors.fondo,
-                shadows: const [
-                  Shadow(color: AppColors.azulPrime, blurRadius: 0, offset: Offset(1.5, 1.5)),
-                  Shadow(color: AppColors.azulPrime, blurRadius: 0, offset: Offset(-1.5, -1.5)),
-                  Shadow(color: AppColors.azulPrime, blurRadius: 0, offset: Offset(1.5, -1.5)),
-                  Shadow(color: AppColors.azulPrime, blurRadius: 0, offset: Offset(-1.5, 1.5)),
+                shadows: [
+                  Shadow(color: AppColors.azulPrime, offset: Offset(1.5, 1.5)),
+                  Shadow(color: AppColors.azulPrime, offset: Offset(-1.5, -1.5)),
+                  Shadow(color: AppColors.azulPrime, offset: Offset(1.5, -1.5)),
+                  Shadow(color: AppColors.azulPrime, offset: Offset(-1.5, 1.5)),
                 ],
               ),
             ),
           ),
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: PosterCard(contenido: contenido, ancho: 115, heroPrefijo: 'top'),
-          ),
+          Expanded(child: PosterCard(contenido: contenido, ancho: 178, heroPrefijo: 'top')),
         ],
       ),
     );

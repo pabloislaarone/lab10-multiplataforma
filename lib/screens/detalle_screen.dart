@@ -41,10 +41,13 @@ class _DetalleScreenState extends State<DetalleScreen> {
           final progreso = estado.progresoDe(c.id);
           final similares = similaresA(c);
           return CustomScrollView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             slivers: [
               SliverAppBar(
                 expandedHeight: ancho * 9 / 16 + 40,
                 pinned: true,
+                stretch: true, // al jalar hacia abajo la portada se agranda
+                onStretchTrigger: () async => HapticFeedback.lightImpact(),
                 backgroundColor: AppColors.fondo,
                 leading: Padding(
                   padding: const EdgeInsets.all(6),
@@ -63,14 +66,16 @@ class _DetalleScreenState extends State<DetalleScreen> {
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
+                  collapseMode: CollapseMode.parallax,
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Hero(
+                      heroPortada(
                         tag: '${widget.heroPrefijo}-${c.id}',
                         child: ImagenContenido(
-                          ruta: c.imagenHorizontal,
-                          wiki: c.wiki,
+                          ruta: c.imagen,
+                          respaldo: c.imagenNube,
                           alignment: Alignment.topCenter,
                           textoRespaldo: c.titulo,
                         ),
@@ -97,7 +102,16 @@ class _DetalleScreenState extends State<DetalleScreen> {
                 ),
               ),
               SliverToBoxAdapter(
-                child: Padding(
+                child: TweenAnimationBuilder<double>(
+                  // El contenido sube y aparece mientras la portada "vuela".
+                  tween: Tween(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, t, child) => Opacity(
+                    opacity: t,
+                    child: Transform.translate(offset: Offset(0, (1 - t) * 30), child: child),
+                  ),
+                  child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,16 +267,17 @@ class _DetalleScreenState extends State<DetalleScreen> {
                     ],
                   ),
                 ),
+                ),
               ),
               if (_pestana == _Pestana.relacionados && similares.isNotEmpty)
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                   sliver: SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
+                      crossAxisCount: 2,
                       mainAxisSpacing: 10,
                       crossAxisSpacing: 10,
-                      childAspectRatio: 2 / 3,
+                      childAspectRatio: 16 / 9,
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (_, i) => PosterCard(
@@ -522,7 +537,7 @@ class _Episodio extends StatelessWidget {
                   children: [
                     ImagenContenido(
                       ruta: contenido.imagenHorizontal,
-                      wiki: contenido.wiki,
+                      respaldo: contenido.imagenNube,
                       alignment: Alignment.topCenter,
                       textoRespaldo: 'E$numero',
                     ),

@@ -153,10 +153,10 @@ class _BuscarScreenState extends State<BuscarScreen> {
                     : GridView.builder(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                          crossAxisCount: 2,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
-                          childAspectRatio: 2 / 3,
+                          childAspectRatio: 16 / 9,
                         ),
                         itemCount: resultados.length,
                         itemBuilder: (_, i) =>
